@@ -1,0 +1,28 @@
+---
+- name: Create Starr directory
+  ansible.builtin.file:
+    path: "{{ docker.directory }}/starr"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  register: starr
+
+- ansible.builtin.import_tasks: lidarr.yml
+  tags: lidarr
+
+- ansible.builtin.import_tasks: radarr.yml
+  tags: radarr
+
+- ansible.builtin.import_tasks: prowlarr.yml
+  tags: prowlarr
+
+- ansible.builtin.import_tasks: qbittorrent.yml
+  tags: qbittorrent
+
+- ansible.builtin.import_tasks: jellyfin.yml
+  tags: jellyfin
+
+- ansible.builtin.include_role:
+    name: apps
+    tasks_from: watchtower
+  tags: watchtower
