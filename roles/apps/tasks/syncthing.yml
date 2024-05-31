@@ -24,6 +24,6 @@
       traefik.enable: "true"
       traefik.http.routers.syncthing.rule: Host(`sync.{{ private_domain }}`)
       traefik.http.routers.syncthing.entrypoints: "https"
-      traefik.http.routers.syncthing.tls: "true"
+      traefik.http.routers.syncthing.middlewares: "authentik@file"
       traefik.http.routers.syncthing.service: "syncthing"
       traefik.http.services.syncthing.loadbalancer.server.port: "8384"

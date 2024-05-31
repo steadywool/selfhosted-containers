@@ -1,0 +1,27 @@
+---
+- hosts: staging
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Run common role
+      ansible.builtin.import_role:
+        name: common
+      become: true
+      tags: common
+
+    - name: Create overlay network
+      community.docker.docker_network:
+        name: "{{ docker.network }}"
+      tags: network
+
+    - name: Run apps role
+      ansible.builtin.import_role:
+        name: apps
+      become: true
+      tags: apps
+
+    - name: Run media role
+      ansible.builtin.import_role:
+        name: media
+      become: true
+      tags: media

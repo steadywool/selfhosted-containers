@@ -7,6 +7,13 @@
     group: "{{ ansible_user }}"
   register: traefik
 
+- name: Create Traefik file provider directory
+  ansible.builtin.file:
+    path: "{{ traefik.path }}/config"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
 - name: Template Traefik configuration
   ansible.builtin.template:
     src: "{{ item }}.j2"
@@ -15,7 +22,9 @@
     group: "{{ ansible_user }}"
   loop:
     - traefik.yml
-    - config.yml
+    - config/config.yml
+    - config/authentik.yml
+    - config/starr.yml
 
 - name: Create acme.json file
   ansible.builtin.file:
@@ -39,7 +48,7 @@
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - "{{ traefik.path }}/acme.json:/acme.json"
       - "{{ traefik.path }}/traefik.yml:/traefik.yml"
-      - "{{ traefik.path }}/config.yml:/config.yml"
+      - "{{ traefik.path }}/config:/config"
     env:
       OVH_ENDPOINT: "{{ ovh_endpoint }}"
       OVH_APPLICATION_KEY: "{{ ovh_application_key }}"
@@ -49,7 +58,5 @@
       traefik.enable: "true"
       traefik.http.routers.traefik.rule: Host(`traefik.{{ private_domain }}`)
       traefik.http.routers.traefik.entrypoints: "https"
-      traefik.http.routers.traefik.tls.certresolver: "ovh"
-      traefik.http.routers.traefik.tls.domains[0].main: "{{ private_domain }}"
-      traefik.http.routers.traefik.tls.domains[0].sans: "*.{{ private_domain }}"
+      traefik.http.routers.traefik.middlewares: "authentik@file"
       traefik.http.routers.traefik.service: "api@internal"

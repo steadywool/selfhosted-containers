@@ -1,0 +1,80 @@
+---
+- name: Create Authentik volumes
+  community.docker.docker_volume:
+    state: present
+    name: "{{ item }}"
+  loop: 
+    - authentik_db
+    - authentik_cache
+    - authentik_media
+    - authentik_templates
+    - authentik_certs
+
+- name: Run Postgresql container
+  community.docker.docker_container:
+    name: postgresql
+    image: docker.io/library/postgres:16-alpine
+    state: started
+    restart_policy: always
+    network_mode: "{{ docker.network }}"
+    volumes:
+      - authentik_db:/var/lib/postgresql/data
+    env:
+      POSTGRES_PASSWORD: "{{ postgresql_password }}"
+      POSTGRES_USER: authentik
+      POSTGRES_DB: authentik
+
+- name: Run Redis container
+  community.docker.docker_container:
+    name: redis
+    image: docker.io/library/redis:alpine
+    state: started
+    restart_policy: always
+    network_mode: "{{ docker.network }}"
+    volumes:
+      - authentik_cache:/data
+
+- name: Run Authentik server
+  community.docker.docker_container:
+    name: authentik_server
+    image: ghcr.io/goauthentik/server:latest
+    state: started
+    restart_policy: always
+    network_mode: "{{ docker.network }}"
+    command: server
+    volumes:
+      - authentik_media:/media
+      - authentik_templates:/templates
+    env:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: "{{ postgresql_password }}"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.authentik.rule: Host(`auth.{{ private_domain }}`)
+      traefik.http.routers.authentik.entrypoints: "https"
+      traefik.http.routers.uptime.middlewares: "authentik@file"
+      traefik.http.routers.authentik.service: "authentik"
+      traefik.http.services.authentik.loadbalancer.server.port: "9000"
+
+- name: Run Authentik worker
+  community.docker.docker_container:
+    name: authentik_worker
+    image: ghcr.io/goauthentik/server:latest
+    state: started
+    restart_policy: always
+    network_mode: "{{ docker.network }}"
+    command: worker
+    volumes:
+      - authentik_media:/media
+      - authentik_templates:/templates
+      - authentik_certs:/certs
+      - /var/run/docker.sock:/var/run/docker.sock
+    env:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: "{{ postgresql_password }}"

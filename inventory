@@ -10,6 +10,9 @@
 [media]
 192.168.1.13 ansible_user=user
 
+[staging]
+192.168.1.15 ansible_user=user
+
 [swarm:children]
 vpn
 apps

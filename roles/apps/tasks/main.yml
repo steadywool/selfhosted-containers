@@ -1,4 +1,10 @@
 ---
+- ansible.builtin.import_tasks: traefik.yml
+  tags: traefik
+
+- ansible.builtin.import_tasks: authentik.yml
+  tags: authentik
+
 - ansible.builtin.import_tasks: baikal.yml
   tags: baikal
 
@@ -10,9 +16,6 @@
 
 - ansible.builtin.import_tasks: freshrss.yml
   tags: freshrss
-
-- ansible.builtin.import_tasks: traefik.yml
-  tags: traefik
 
 - ansible.builtin.import_tasks: uptime-kuma.yml
   tags: uptime-kuma

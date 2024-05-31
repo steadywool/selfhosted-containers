@@ -1,67 +1,47 @@
 ---
-# Reverse-proxy Proxmox
 http:
   routers:
-    proxmox:
-      rule: "Host(`pve.{{ private_domain }}`)"
-      entryPoints: 
-        - "https"
-      tls: {}
-      service: "proxmox"
-
-    wireguard:
-      rule: "Host(`wg.{{ private_domain }}`)"
-      entryPoints: 
-        - "https"
-      tls: {}
-      service: "wireguard"
-
     radarr:
       rule: "Host(`radarr.{{ private_domain }}`)"
       entryPoints: 
         - "https"
-      tls: {}
+      middlewares: 
+        - "authentik@file"
       service: "radarr"
 
     lidarr:
       rule: "Host(`lidarr.{{ private_domain }}`)"
       entryPoints: 
         - "https"
-      tls: {}
+      middlewares: 
+        - "authentik@file"
       service: "lidarr"
 
     prowlarr:
       rule: "Host(`prowlarr.{{ private_domain }}`)"
       entryPoints: 
         - "https"
-      tls: {}
+      middlewares: 
+        - "authentik@file"
       service: "prowlarr"
 
     qbittorrent:
       rule: "Host(`torrent.{{ private_domain }}`)"
       entryPoints: 
         - "https"
-      tls: {}
+      middlewares: 
+        - "authentik@file"
       service: "qbittorrent"
 
     jellyfin:
       rule: "Host(`jelly.{{ private_domain }}`)"
       entryPoints: 
         - "https"
-      tls: {}
-      service: "proxmox"
+      middlewares: 
+        - "authentik@file"
+      service: "jellyfin"
 
   services:
-    proxmox:
-      loadBalancer:
-        servers:
-          - url: "https://192.168.1.9:8006"
-
-    wireguard:
-      loadBalancer:
-        servers:
-          - url: "wireguard:51821"
-
     radarr:
       loadBalancer:
         servers:

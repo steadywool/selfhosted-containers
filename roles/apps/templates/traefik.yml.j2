@@ -9,7 +9,7 @@ certificatesResolvers:
       email: "{{ email }}"
       storage: "/acme.json"
       dnsChallenge:
-        provider: "ovh"  
+        provider: "ovh"
 
 # HTTP/HTTPS configuration
 entryPoints:
@@ -22,17 +22,23 @@ entryPoints:
           scheme: "https"
   https:
     address: ":443"
+    http:
+      tls: # Generate wildcard certificate
+        certResolver: "ovh"
+        domains:
+          - main: "{{ private_domain }}"
+            sans:
+              - "*.{{ private_domain }}"
  
 # Allow reverse-proxy on self-signed web app
 serversTransport:
   insecureSkipVerify: true
 
+# Read Docker label & file configuration
 providers:
-  # Reverse proxy docker services
   docker:
     endpoint: "unix:///var/run/docker.sock" # Docker socket
     network: "overlay_network" # Docker network
     exposedbydefault: false # Must use traefik.enable to expose service
-  # Reverse proxy external services
   file:
-    filename: "/config.yml"
+    directory: "/config" # Config directory
