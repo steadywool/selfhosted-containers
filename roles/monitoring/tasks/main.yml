@@ -1,0 +1,17 @@
+---
+- name: Create Grafana directory
+  ansible.builtin.file:
+    path: "{{ docker.directory }}/grafana"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  tags: grafana,loki,promtail
+
+- ansible.builtin.import_tasks: grafana.yml
+  tags: grafana
+
+- ansible.builtin.import_tasks: loki.yml
+  tags: loki
+
+- ansible.builtin.import_tasks: promtail.yml
+  tags: promtail

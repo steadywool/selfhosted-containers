@@ -1,0 +1,21 @@
+---
+- name: Template Promtail configuration
+  ansible.builtin.template:
+    src: config.yml.j2
+    dest: "{{ docker.directory }}/grafana/config.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Run Promtail container
+  community.docker.docker_container:
+    name: promtail
+    image: docker.io/grafana/promtail:latest
+    state: started
+    restart_policy: always
+    network_mode: "{{ docker.network }}"
+    restart: true
+    command: "-config.file=/etc/promtail/config.yml"
+    volumes:
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers
+      - "{{ docker.directory }}/grafana/config.yml:/etc/promtail/config.yml"

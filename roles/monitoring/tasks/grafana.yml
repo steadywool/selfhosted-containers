@@ -1,0 +1,18 @@
+---
+- name: Create Grafana volumes
+  community.docker.docker_volume:
+    state: present
+    name: grafana_data
+
+- name: Run Grafana container
+  community.docker.docker_container:
+    name: grafana
+    image: docker.io/grafana/grafana-oss:latest
+    state: started
+    restart_policy: always
+    network_mode: "{{ docker.network }}"
+    restart: true
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - 3000:3000

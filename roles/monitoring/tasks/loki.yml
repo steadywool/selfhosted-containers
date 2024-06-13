@@ -1,0 +1,16 @@
+---
+- name: Create Loki volumes
+  community.docker.docker_volume:
+    state: present
+    name: loki_data
+
+- name: Run Loki container
+  community.docker.docker_container:
+    name: loki
+    image: docker.io/grafana/loki:latest
+    state: started
+    restart_policy: always
+    network_mode: "{{ docker.network }}"
+    restart: true
+    volumes:
+      - loki_data:/loki
